@@ -1,0 +1,21 @@
+{
+  "name": "websocket",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5",
+    "database": "*",
+    "schemas": "*",
+    "envs": "*"
+  },
+  "dependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/jsonwebtoken": "^9.0.9",
+    "amqplib": "^0.10.5",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

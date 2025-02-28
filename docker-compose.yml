@@ -1,0 +1,81 @@
+version: '3.8'
+services:
+  postgres:
+      image: postgres:latest
+      environment:
+        - POSTGRES_USER=sourav
+        - POSTGRES_PASSWORD=s2o0u0r3av
+        - POSTGRES_DB=mydatabase
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      networks:
+        - excalibur-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+        - RABBITMQ_DEFAULT_USER=sourav
+        - RABBITMQ_DEFAULT_PASS=s2o0u0r3av
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+    networks:
+      - excalibur-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "3002:3002"
+    environment:
+      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - excalibur-network
+
+  ws:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ws
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - RABBITMQ_URL=amqp://sourav:s2o0u0r3av@rabbitmq:5672
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - excalibur-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - AUTH_URL=http://frontend:3000
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - excalibur-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  excalibur-network:
+    driver: bridge
