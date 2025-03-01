@@ -6,7 +6,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   className?: string;
   type?: "button" | "submit" | "reset";
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "outline";
   size?: "sm" | "md" | "lg";
 }
 
@@ -15,6 +15,7 @@ const buttonVariants = {
   primary: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white",
   secondary: "bg-gradient-to-r from-gray-800 to-gray-900 text-white",
   danger: "bg-red-500 text-white",
+  outline: "border border-gray-300 text-gray-700 bg-white",
 };
 
 // Size Variants

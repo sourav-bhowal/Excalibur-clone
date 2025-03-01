@@ -12,8 +12,8 @@ export const { handlers, auth } = NextAuth({
       },
       authorize: async (credentials) => {
         const response = await axios.post(`${config.HTTP_BACKEND_URL}/login`, {
-          email: credentials.email,
-          password: credentials.password,
+          email: credentials?.email,
+          password: credentials?.password,
         });
         const user = response.data.user;
         if (response && user) {

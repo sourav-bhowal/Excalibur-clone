@@ -7,7 +7,7 @@ interface DrawProps {
   roomId: string;
   socket: WebSocket;
   token: string;
-  shapeToDraw: string | null;
+  getShapeToDraw: () => string | null;
 }
 
 // Function to draw shapes on the canvas
@@ -16,9 +16,8 @@ export function draw({
   roomId,
   socket,
   token,
-  shapeToDraw,
+  getShapeToDraw,
 }: DrawProps): () => void {
-  console.log("Drawing on canvas", shapeToDraw);
   // Get the 2d context
   const context = canvas?.getContext("2d");
 
@@ -28,24 +27,23 @@ export function draw({
       console.error("Canvas context not found");
     };
 
+  // AbortController to cleanup the event listeners
   const controller = new AbortController();
-  const { signal } = controller;
 
-  // Cleanup function
-  const cleanup = () => {
-    controller.abort();
-    canvas.removeEventListener("mousedown", handleMouseDown);
-    canvas.removeEventListener("mouseup", handleMouseUp);
-    canvas.removeEventListener("mousemove", handleMouseMove);
-  };
+  // Signal from the controller to pass to the event listeners
+  const { signal } = controller;
 
   // Existing shapes array
   let existingShapes: Shape[] = [];
 
+  // Get the existing shapes from the server for the given room
   (async () => {
+    // IIFE to fetch the existing shapes
     try {
       // Get the existing shapes from the server for the given room
       existingShapes = await getExistingShapes(roomId, token);
+      // Clear the canvas and redraw all the existing shapes
+      clearCanvasAndRedraw(existingShapes, context);
     } catch (error) {
       console.error("Error fetching existing shapes", error);
     }
@@ -63,9 +61,6 @@ export function draw({
     }
   };
 
-  // Clear the canvas and redraw all the existing shapes
-  clearCanvasAndRedraw(existingShapes, context);
-
   // DRAW LOGIC HERE
   let startDrawing = false; // Flag to indicate if the user is drawing
   let startX = 0; // Start position of the rectangle to draw
@@ -82,6 +77,9 @@ export function draw({
 
   // Mouse up event
   const handleMouseUp = (event: MouseEvent) => {
+    // Get the shape to draw
+    const shapeToDraw = getShapeToDraw();
+
     // Set the startDrawing flag to false
     startDrawing = false;
 
@@ -121,13 +119,15 @@ export function draw({
       };
     }
 
-    // If newShape is not null, send the shape to the server
+    // If newShape is not null
     if (newShape) {
+      // Add the new shape to the existing shapes array
       existingShapes.push(newShape);
+      // Send the shape as a string to the ws server
       socket.send(
         JSON.stringify({
           type: "chat",
-          message: JSON.stringify(newShape), // Send the shape as a string
+          message: JSON.stringify(newShape),
           roomId,
         })
       );
@@ -136,6 +136,9 @@ export function draw({
 
   // Mouse move event
   const handleMouseMove = (event: MouseEvent) => {
+    // Get the shape to draw
+    const shapeToDraw = getShapeToDraw();
+
     // If the user is drawing
     if (startDrawing) {
       // Clear the canvas and redraw all the existing shapes
@@ -153,10 +156,12 @@ export function draw({
         const centerX = startX + width / 2;
         const centerY = startY + height / 2;
         const radius = Math.min(width, height) / 2;
+        context.strokeStyle = "red";
         context.beginPath(); // Begin a new path
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI); // Draw a circle
         context.stroke(); // Stroke the circle
       } else if (shapeToDraw === "line") {
+        context.strokeStyle = "red";
         context.beginPath(); // Begin a new path
         context.moveTo(startX, startY); // Move the starting point of the line
         context.lineTo(event.clientX, event.clientY); // Draw a line to the end point
@@ -169,6 +174,14 @@ export function draw({
   canvas.addEventListener("mousedown", handleMouseDown, { signal });
   canvas.addEventListener("mouseup", handleMouseUp, { signal });
   canvas.addEventListener("mousemove", handleMouseMove, { signal });
+
+  // Cleanup function to remove the event listeners
+  const cleanup = () => {
+    controller.abort();
+    canvas.removeEventListener("mousedown", handleMouseDown);
+    canvas.removeEventListener("mouseup", handleMouseUp);
+    canvas.removeEventListener("mousemove", handleMouseMove);
+  };
 
   // Return the cleanup function
   return cleanup;
@@ -187,10 +200,12 @@ function clearCanvasAndRedraw(
       context.strokeStyle = "red"; // strokeStyle is the color of the rectangle
       context.strokeRect(shape.x, shape.y, shape.width, shape.height); // Draw the rectangle on the canvas
     } else if (shape.type === "circle") {
+      context.strokeStyle = "red";
       context.beginPath(); // Begin a new path
       context.arc(shape.centerX, shape.centerY, shape.radius, 0, 2 * Math.PI); // Draw a circle
       context.stroke(); // Stroke the circle
     } else if (shape.type === "line") {
+      context.strokeStyle = "red";
       context.beginPath(); // Begin a new path
       context.moveTo(shape.x1, shape.y1); // Move the starting point of the line
       context.lineTo(shape.x2, shape.y2); // Draw a line to the end point

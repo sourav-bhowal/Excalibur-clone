@@ -29,14 +29,18 @@ export default function AuthPage({ isSignIn }: AuthPageProps) {
   const onSubmit: SubmitHandler<LoginUser | SignUpUser> = async (data) => {
     if (isSignIn) {
       try {
-        await signIn("credentials", {
+        const res = await signIn("credentials", {
           email: data.email,
           password: data.password,
-          redirectTo: "/room/join-room",
         });
+        if (res?.ok) {
+          router.push("/room/join-room");
+        } else {
+          alert("Something went wrong. Please try again later");
+        }
       } catch (error) {
         console.log(error);
-        alert("Invalid email or password");
+        alert("Something went wrong. Please try again later");
       }
     } else {
       try {
