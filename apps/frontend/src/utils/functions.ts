@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "envs/config";
+import { config } from "../../config";
 
 // get roomBySlug function
 export const getRoomBySlug = async (slug: string, token: string) => {

@@ -1,5 +1,5 @@
-import { config } from "envs/config";
 import { useEffect, useState } from "react";
+import { config } from "../../config";
 
 // Custom hook to use a WebSocket connection
 export function useSocket(token: string, roomId: string) {

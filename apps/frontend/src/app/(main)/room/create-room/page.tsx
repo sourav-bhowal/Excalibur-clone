@@ -1,5 +1,4 @@
 "use client";
-import { config } from "envs/config";
 import { CreateRoom } from "schemas/schema";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { config } from "../../../../../config";
 
 // Home page component
 export default function CreateRoomPage() {

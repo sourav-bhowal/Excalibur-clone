@@ -11,7 +11,7 @@ services:
       volumes:
         - postgres_data:/var/lib/postgresql/data
       networks:
-        - excalibur
+        - excalibur-network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -24,7 +24,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia
     networks:
-      - excalibur
+      - excalibur-network
 
   backend:
     build:
@@ -33,13 +33,14 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - DATABASE_URL=postgres://sourav:s2o0u0r3av@postgres:5432/mydatabase
       - JWT_SECRET=secret
+      - HTTP_PORT=3002
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur
+      - excalibur-network
 
   ws:
     build:
@@ -48,14 +49,15 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - DATABASE_URL=postgres://sourav:s2o0u0r3av@postgres:5432/mydatabase
       - RABBITMQ_URL=amqp://sourav:s2o0u0r3av@rabbitmq:5672
       - JWT_SECRET=secret
+      - WS_PORT=3003
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur
+      - excalibur-network
 
   frontend:
     build:
@@ -64,21 +66,20 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
-      - AUTH_URL=http://frontend:3000
-      - AUTH_SECRET=secret
       - HTTP_BACKEND_URL=http://backend:3002/api
       - WS_BACKEND_URL=ws://ws:3003
+      - AUTH_URL=http://frontend:3000
+      - AUTH_SECRET=secret 
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur
+      - excalibur-network
 
 volumes:
   postgres_data:
   rabbitmq_data:
 
 networks:
-  excalibur:
+  excalibur-network:
     driver: bridge

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import axios from "axios";
-import { config } from "@/utils/config";
+import { config } from "../../../../../config";
 
 export const { handlers, auth } = NextAuth({
   providers: [
@@ -23,7 +23,6 @@ export const { handlers, auth } = NextAuth({
       },
     }),
   ],
-  trustHost: true,
   callbacks: {
     async jwt({ token, user }) {
       // console.log("BEFORE JWT USER:", user, "BEFORE JWT TOKEN:",  token);

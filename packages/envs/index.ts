@@ -7,12 +7,12 @@ conf({
 
 // Define the configuration object
 const _config = {
-  JWT_SECRET: "secret",
-  RABBITMQ_URL: "amqp://sourav:s2o0u0r3av@rabbitmq:5672",
-  HTTP_BACKEND_URL: "http://backend:3002/api",
-  WS_BACKEND_URL: "ws://ws:3003",
-  HTTP_PORT: 3002,
-  WS_PORT: 3003,
+  JWT_SECRET: process.env.JWT_SECRET || "secret",
+  RABBITMQ_URL: process.env.RABBITMQ_URL || "amqp://sourav:s2o0u0r3av@localhost:5672",
+  HTTP_BACKEND_URL: process.env.HTTP_BACKEND_URL || "http://localhost:3002/api",
+  WS_BACKEND_URL: process.env.WS_BACKEND_URL || "ws://localhost:3003",
+  HTTP_PORT: process.env.HTTP_PORT|| 3002,
+  WS_PORT: process.env.WS_PORT || 3003,
 };
 
 // Freeze the configuration object to prevent modification

@@ -7,8 +7,8 @@ import { signIn } from "next-auth/react";
 import { LoginUser, SignUpUser } from "schemas/schema";
 import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
-import { config } from "envs/config";
 import { useRouter } from "next/navigation";
+import { config } from "../../config";
 
 // AuthPage component
 interface AuthPageProps {
