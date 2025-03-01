@@ -61,6 +61,7 @@ export default function Canvas({ roomId, user }: CanvasProps) {
     return (
       <div className="h-screen flex justify-center items-center">
         <Loader2 className="animate-spin" size={50} />
+        <p className="ml-2">Loading...</p>
       </div>
     );
 

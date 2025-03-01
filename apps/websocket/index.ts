@@ -208,12 +208,28 @@ consumeQueue(async (msg) => {
     });
 
     // Save the message to the database
-    await prisma.chat.create({
+    const saveChatInDb = await prisma.chat.create({
       data: {
         roomId,
         userId,
         message,
       },
     });
+
+    // If chat is not saved in db send a error
+    if (!saveChatInDb) {
+      console.log("Failed to save chat in db");
+      // Send the error message only to the user who sent the message
+      users.forEach((user, ws) => {
+        if (user.id === userId) {
+          ws.send(
+            JSON.stringify({
+              type: "Error",
+              message: "Failed to save shape in db.",
+            })
+          );
+        }
+      });
+    }
   }
 });
