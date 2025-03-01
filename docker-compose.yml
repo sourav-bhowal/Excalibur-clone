@@ -68,7 +68,7 @@ services:
     environment:
       - HTTP_BACKEND_URL=http://backend:3002/api
       - WS_BACKEND_URL=ws://ws:3003
-      - AUTH_URL=http://frontend:3000
+      - AUTH_URL=http://localhost:3000
       - AUTH_SECRET=secret 
     depends_on:
       - postgres

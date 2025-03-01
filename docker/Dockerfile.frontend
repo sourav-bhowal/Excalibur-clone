@@ -12,7 +12,6 @@ COPY ./apps/frontend ./apps/frontend
 
 RUN bun install
 
-RUN bun run generate:db
 RUN bunx turbo build
 
 EXPOSE 3000
