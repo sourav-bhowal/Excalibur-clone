@@ -5,22 +5,35 @@ import amqp, { Connection, Channel, ConsumeMessage } from "amqplib";
 let connection: Connection | null = null;
 let channel: Channel | null = null;
 
+// Exchange PUB/SUB setup for RabbitMQ
+const setupExchange = async (channel: Channel) => {
+  // Assert the exchange with name "shape_updates" and type "fanout"
+  await channel.assertExchange("shape_updates", "fanout", { durable: true });
+
+  // Assert the queue with name "chatQueue" and make it durable
+  await channel.assertQueue("chatQueue", { durable: true });
+
+  // Bind the queue to the exchange with empty routing key to get all messages
+  await channel.bindQueue("chatQueue", "shape_updates", "");
+};
+
 // Connect to RabbitMQ server and return connection and channel
 const connectRabbitMQ = async () => {
   // If connection and channel are already present, return them
-  if (connection && channel) {
-    return { connection, channel };
-  }
+  if (connection && channel) return { connection, channel };
 
   // Try to connect to RabbitMQ server and create a channel
   try {
     // Connect to RabbitMQ server
     connection = await amqp.connect(config.RABBITMQ_URL!);
     console.log("Connected to RabbitMQ!!");
-    // Create a channel
+
+    // Create a channel for the connection
     channel = await connection.createChannel();
-    // Assert a queue named chatQueue with durable option as true
-    await channel.assertQueue("chatQueue", { durable: true });
+
+    // Setup exchange for PUB/SUB
+    await setupExchange(channel);
+
     // Return connection and channel
     return { connection, channel };
   } catch (error) {
@@ -30,14 +43,14 @@ const connectRabbitMQ = async () => {
   }
 };
 
-// Publish message to chatQueue with the message as JSON string
+// Publish message to PUB/SUB exchange
 export const publishToQueue = async (message: object) => {
   try {
     // Connect to RabbitMQ server and get channel
     const { channel } = await connectRabbitMQ();
-    // console.log("Queue is published")
+
     // Publish message to chatQueue with message as JSON string
-    channel.sendToQueue("chatQueue", Buffer.from(JSON.stringify(message)), {
+    channel.publish("shape_updates", "", Buffer.from(JSON.stringify(message)), {
       persistent: true,
     });
   } catch (error) {
@@ -46,26 +59,29 @@ export const publishToQueue = async (message: object) => {
   }
 };
 
-// Consume messages from chatQueue and call callback function
+// Consume messages for PUB/SUB exchange
 export const consumeQueue = async (
   callback: (msg: ConsumeMessage | null) => void
 ) => {
   try {
     // Connect to RabbitMQ server and get channel
     const { channel } = await connectRabbitMQ();
-    // console.log("queue is consumed")
-    // Consume messages from chatQueue and call callback function
+
+    // Assert the queue to make sure it exists
+    const { queue } = await channel.assertQueue("", { exclusive: true });
+
+    // Bind the queue to the exchange to get messages
+    await channel.bindQueue(queue, "shape_updates", "");
+
+    // Consume messages from the queue and call the callback function
     channel.consume(
-      "chatQueue",
+      queue,
       (msg) => {
         if (msg) {
-          // Call the callback function with the message
           callback(msg);
-          // Acknowledge the message so that it is removed from the queue
           channel.ack(msg);
         }
       },
-      // Set noAck option as false to acknowledge the message manually
       { noAck: false }
     );
   } catch (error) {

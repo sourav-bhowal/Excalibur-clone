@@ -164,7 +164,8 @@ webSocketServer.on("connection", (socket, request) => {
         const userName = userFromDb.name;
 
         // Publish the message to the queue
-        publishToQueue({
+        await publishToQueue({
+          type: "shape_update",
           roomId,
           userId,
           userName,
@@ -190,8 +191,10 @@ consumeQueue(async (msg) => {
   if (msg) {
     // Parse the message data to a JSON object
     const messageData = JSON.parse(msg.content.toString());
+
     // Get the room id, user id, user name, and message from the message data
     const { roomId, userId, userName, message } = messageData;
+
     // Send the message to the users in the room
     users.forEach((user, ws) => {
       if (user.rooms.includes(roomId)) {
