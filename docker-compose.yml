@@ -11,7 +11,7 @@ services:
       volumes:
         - postgres_data:/var/lib/postgresql/data
       networks:
-        - excalibur-network
+        - excalibur
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -24,7 +24,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/mnesia
     networks:
-      - excalibur-network
+      - excalibur
 
   backend:
     build:
@@ -34,11 +34,12 @@ services:
       - "3002:3002"
     environment:
       - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - JWT_SECRET=secret
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur-network
+      - excalibur
 
   ws:
     build:
@@ -49,33 +50,35 @@ services:
     environment:
       - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
       - RABBITMQ_URL=amqp://sourav:s2o0u0r3av@rabbitmq:5672
+      - JWT_SECRET=secret
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur-network
+      - excalibur
 
   frontend:
     build:
       context: .
       dockerfile: docker/Dockerfile.frontend
-      args:
-        - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
     ports:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://sourav:s2o0u0r3av@postgres:5432/mydatabase
       - AUTH_URL=http://frontend:3000
+      - AUTH_SECRET=secret
+      - HTTP_BACKEND_URL=http://backend:3002/api
+      - WS_BACKEND_URL=ws://ws:3003
     depends_on:
       - postgres
       - rabbitmq
     networks:
-      - excalibur-network
+      - excalibur
 
 volumes:
   postgres_data:
   rabbitmq_data:
 
 networks:
-  excalibur-network:
+  excalibur:
     driver: bridge

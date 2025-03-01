@@ -91,6 +91,7 @@
     "packages/envs": {
       "name": "envs",
       "dependencies": {
+        "@repo/typescript-config": "*",
         "dotenv": "^16.4.7",
       },
       "devDependencies": {
