@@ -35,6 +35,7 @@ export const publishToQueue = async (message: object) => {
   try {
     // Connect to RabbitMQ server and get channel
     const { channel } = await connectRabbitMQ();
+    // console.log("Queue is published")
     // Publish message to chatQueue with message as JSON string
     channel.sendToQueue("chatQueue", Buffer.from(JSON.stringify(message)), {
       persistent: true,
@@ -52,6 +53,7 @@ export const consumeQueue = async (
   try {
     // Connect to RabbitMQ server and get channel
     const { channel } = await connectRabbitMQ();
+    // console.log("queue is consumed")
     // Consume messages from chatQueue and call callback function
     channel.consume(
       "chatQueue",
