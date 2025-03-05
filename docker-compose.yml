@@ -1,30 +1,30 @@
 version: '3.8'
 services:
-  postgres:
-      image: postgres:latest
-      environment:
-        - POSTGRES_USER=sourav
-        - POSTGRES_PASSWORD=s2o0u0r3av
-        - POSTGRES_DB=mydatabase
-      ports:
-        - "5432:5432"
-      volumes:
-        - postgres_data:/var/lib/postgresql/data
-      networks:
-        - excalibur-network
+  # postgres:
+  #     image: postgres:latest
+  #     environment:
+  #       - POSTGRES_USER=sourav
+  #       - POSTGRES_PASSWORD=s2o0u0r3av
+  #       - POSTGRES_DB=mydatabase
+  #     ports:
+  #       - "5432:5432"
+  #     volumes:
+  #       - postgres_data:/var/lib/postgresql/data
+  #     networks:
+  #       - excalibur-network
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    environment:
-        - RABBITMQ_DEFAULT_USER=sourav
-        - RABBITMQ_DEFAULT_PASS=s2o0u0r3av
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq/mnesia
-    networks:
-      - excalibur-network
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   environment:
+  #       - RABBITMQ_DEFAULT_USER=sourav
+  #       - RABBITMQ_DEFAULT_PASS=s2o0u0r3av
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq/mnesia
+  #   networks:
+  #     - excalibur-network
 
   backend:
     build:
@@ -33,12 +33,12 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - DATABASE_URL=postgres://sourav:s2o0u0r3av@postgres:5432/mydatabase
+      - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=secret
       - HTTP_PORT=3002
-    depends_on:
-      - postgres
-      - rabbitmq
+    # depends_on:
+    #   - postgres
+    #   - rabbitmq
     networks:
       - excalibur-network
 
@@ -49,13 +49,13 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - DATABASE_URL=postgres://sourav:s2o0u0r3av@postgres:5432/mydatabase
-      - RABBITMQ_URL=amqp://sourav:s2o0u0r3av@rabbitmq:5672
+      - DATABASE_URL=${DATABASE_URL}
+      - RABBITMQ_URL=${RABBITMQ_URL}
       - JWT_SECRET=secret
       - WS_PORT=3003
-    depends_on:
-      - postgres
-      - rabbitmq
+    # depends_on:
+    #   - postgres
+    #   - rabbitmq
     networks:
       - excalibur-network
 
@@ -70,15 +70,15 @@ services:
       - WS_BACKEND_URL=ws://ws:3003
       - AUTH_URL=http://localhost:3000
       - AUTH_SECRET=secret 
-    depends_on:
-      - postgres
-      - rabbitmq
+    # depends_on:
+    #   - postgres
+    #   - rabbitmq
     networks:
       - excalibur-network
 
-volumes:
-  postgres_data:
-  rabbitmq_data:
+# volumes:
+#   postgres_data:
+#   rabbitmq_data:
 
 networks:
   excalibur-network:
