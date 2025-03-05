@@ -1,5 +1,8 @@
 FROM oven/bun:1
 
+ENV DATABASE_URL=${DATABASE_URL}
+ENV RABBITMQ_URL=${RABBITMQ_URL}
+
 WORKDIR /usr/src/app
 
 COPY ./packages ./packages

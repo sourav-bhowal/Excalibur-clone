@@ -1,7 +1,7 @@
 name: Continuous Deployment (Backend)
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -39,4 +39,4 @@ jobs:
             docker stop excalibur_backend
             docker rm excalibur_backend
             docker pull souravbhowal/excalibur_backend:${{ github.sha }}
-            docker run --name excalibur_backend -d -p 3002:3002 souravbhowal/excalibur_backend:${{ github.sha }}
+            docker run --name excalibur_backend -d -e DATABASE_URL=${{ secrets.DATABASE_URL }} -p 3002:3002 souravbhowal/excalibur_backend:${{ github.sha }}
