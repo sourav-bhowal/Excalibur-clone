@@ -32,6 +32,7 @@ export default function AuthPage({ isSignIn }: AuthPageProps) {
         const res = await signIn("credentials", {
           email: data.email,
           password: data.password,
+          redirect: false,
         });
         if (res?.ok) {
           router.push("/room/join-room");

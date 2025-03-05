@@ -9,6 +9,7 @@ interface DrawProps {
   socket: WebSocket;
   token: string;
   getShapeToDraw: () => string | null;
+  getShapeColor: () => string;
 }
 
 // Function to draw shapes on the canvas
@@ -18,6 +19,7 @@ export function draw({
   socket,
   token,
   getShapeToDraw,
+  getShapeColor,
 }: DrawProps): () => void {
   // Get the 2d context
   const context = canvas?.getContext("2d");
@@ -81,6 +83,8 @@ export function draw({
     // Get the shape to draw
     const shapeToDraw = getShapeToDraw();
 
+    const shapeColor = getShapeColor();
+
     // Set the startDrawing flag to false
     startDrawing = false;
 
@@ -95,6 +99,7 @@ export function draw({
     if (shapeToDraw === "rectangle") {
       newShape = {
         type: "rectangle",
+        color: shapeColor,
         x: startX,
         y: startY,
         width,
@@ -106,6 +111,7 @@ export function draw({
       const radius = Math.min(width, height) / 2;
       newShape = {
         type: "circle",
+        color: shapeColor,
         centerX,
         centerY,
         radius,
@@ -113,6 +119,7 @@ export function draw({
     } else if (shapeToDraw === "line") {
       newShape = {
         type: "line",
+        color: shapeColor,
         x1: startX,
         y1: startY,
         x2: event.clientX,
@@ -140,6 +147,9 @@ export function draw({
     // Get the shape to draw
     const shapeToDraw = getShapeToDraw();
 
+    // Get the shape color
+    const shapeColor = getShapeColor();
+
     // If the user is drawing
     if (startDrawing) {
       // Clear the canvas and redraw all the existing shapes
@@ -151,18 +161,18 @@ export function draw({
 
       // Draw the rectangle on the canvas
       if (shapeToDraw === "rectangle") {
-        context.strokeStyle = "red"; // strokeStyle is the color of the rectangle
+        context.strokeStyle = `${shapeColor}`; // strokeStyle is the color of the rectangle
         context.strokeRect(startX, startY, width, height); // Draw the rectangle on the canvas
       } else if (shapeToDraw === "circle") {
         const centerX = startX + width / 2;
         const centerY = startY + height / 2;
         const radius = Math.min(width, height) / 2;
-        context.strokeStyle = "red";
+        context.strokeStyle = `${shapeColor}`;
         context.beginPath(); // Begin a new path
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI); // Draw a circle
         context.stroke(); // Stroke the circle
       } else if (shapeToDraw === "line") {
-        context.strokeStyle = "red";
+        context.strokeStyle = `${shapeColor}`;
         context.beginPath(); // Begin a new path
         context.moveTo(startX, startY); // Move the starting point of the line
         context.lineTo(event.clientX, event.clientY); // Draw a line to the end point

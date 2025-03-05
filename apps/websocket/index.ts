@@ -165,6 +165,7 @@ webSocketServer.on("connection", (socket, request) => {
 
         // Publish the message to the queue
         publishToQueue({
+          type: "shape_update",
           roomId,
           userId,
           userName,
