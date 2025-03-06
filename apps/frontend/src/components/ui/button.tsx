@@ -8,6 +8,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary" | "danger" | "outline";
   size?: "sm" | "md" | "lg";
+  onClick?: () => void;
 }
 
 // Button Variants
@@ -31,6 +32,7 @@ export const Button = ({
   type,
   variant,
   size,
+  onClick,
 }: ButtonProps) => {
   return (
     <button
@@ -40,6 +42,7 @@ export const Button = ({
         ${className} 
         ${buttonVariants[variant || "primary"]}`}
       type={type || "submit"}
+      onClick={onClick}
     >
       {children}
     </button>
