@@ -22,11 +22,11 @@ app.use(
 );
 
 // Routes
-app.post("/api/signup", signUpUser);
-app.post("/api/login", loginUser);
-app.post("/api/room/create", authMiddleware, createRoom);
-app.get("/api/room/chats/:roomId", authMiddleware, getRoomChats);
-app.get("/api/room/:slug", authMiddleware, getRoomBySlug);
+app.post("/signup", signUpUser);
+app.post("/login", loginUser);
+app.post("/room/create", authMiddleware, createRoom);
+app.get("/room/chats/:roomId", authMiddleware, getRoomChats);
+app.get("/room/:slug", authMiddleware, getRoomBySlug);
 
 // Start the server
 app.listen(config.HTTP_PORT, () => {
