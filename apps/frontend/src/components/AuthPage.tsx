@@ -35,7 +35,7 @@ export default function AuthPage({ isSignIn }: AuthPageProps) {
           redirect: false,
         });
         if (res?.ok) {
-          router.push("/room/join-room");
+          router.push("/room");
         } else {
           alert("Something went wrong. Please try again later");
         }
