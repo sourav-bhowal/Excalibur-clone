@@ -102,7 +102,12 @@ export default function Home() {
             and creative professionals.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="px-8 py-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-lg font-medium">
+            <button
+              className="px-8 py-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-lg font-medium"
+              onClick={() => {
+                router.push("/room");
+              }}
+            >
               Get Started — It&apos;s Free
             </button>
             <button className="px-8 py-4 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-lg font-medium">
