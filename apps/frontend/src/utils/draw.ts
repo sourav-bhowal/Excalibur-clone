@@ -106,9 +106,11 @@ export function draw({
         height,
       };
     } else if (shapeToDraw === "circle") {
+      const width = event.clientX - startX;
+      const height = event.clientY - startY;
+      const radius = Math.min(Math.abs(width), Math.abs(height)) / 2;
       const centerX = startX + width / 2;
       const centerY = startY + height / 2;
-      const radius = Math.min(width, height) / 2;
       newShape = {
         type: "circle",
         color: shapeColor,
@@ -164,13 +166,15 @@ export function draw({
         context.strokeStyle = `${shapeColor}`; // strokeStyle is the color of the rectangle
         context.strokeRect(startX, startY, width, height); // Draw the rectangle on the canvas
       } else if (shapeToDraw === "circle") {
+        const width = event.clientX - startX;
+        const height = event.clientY - startY;
+        const radius = Math.min(Math.abs(width), Math.abs(height)) / 2;
         const centerX = startX + width / 2;
         const centerY = startY + height / 2;
-        const radius = Math.min(width, height) / 2;
         context.strokeStyle = `${shapeColor}`;
-        context.beginPath(); // Begin a new path
-        context.arc(centerX, centerY, radius, 0, 2 * Math.PI); // Draw a circle
-        context.stroke(); // Stroke the circle
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        context.stroke();
       } else if (shapeToDraw === "line") {
         context.strokeStyle = `${shapeColor}`;
         context.beginPath(); // Begin a new path
