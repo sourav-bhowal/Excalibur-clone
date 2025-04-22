@@ -13,6 +13,7 @@ const _config = {
   WS_BACKEND_URL: process.env.WS_BACKEND_URL || "wss://excalibur-ws.souravbhowal.site",
   HTTP_PORT: process.env.HTTP_PORT || 3002,
   WS_PORT: process.env.WS_PORT || 3003,
+  REDIS_URL: process.env.REDIS_URL,
 };
 
 // Freeze the configuration object to prevent modification

@@ -3,18 +3,19 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "envs/config";
 import { prisma } from "database/prisma";
 import { publishToQueue, consumeQueue } from "./lib/queue.js";
+import { redis } from "./lib/redis.js";
 
 // Create a WebSocket server
 const webSocketServer = new WebSocketServer({ port: Number(config.WS_PORT) });
 
 // Interface of User object
-interface User {
-  id: string;
-  rooms: string[];
-}
+// interface User {
+//   id: string;
+//   rooms: string[];
+// }
 
 // Map of User objects with WebSocket as key and User as value
-const users = new Map<WebSocket, User>();
+// const users = new Map<WebSocket, User>();
 
 // Check user is authenticated or not using JWT token
 function isAuthenticated(token: string): string | null {
@@ -62,10 +63,17 @@ webSocketServer.on("connection", (socket, request) => {
   }
 
   // Add the user to the users map with the WebSocket as key
-  users.set(socket, {
-    id: userId,
-    rooms: [],
-  });
+  // users.set(socket, {
+  //   id: userId,
+  //   rooms: [],
+  // });
+
+  // Set the user in redis
+  redis.hset(
+    "users",
+    socket.toString(),
+    JSON.stringify({ id: userId, rooms: [] })
+  );
 
   // Listen for "message" events from the client
   socket.on("message", async (data) => {
@@ -82,7 +90,9 @@ webSocketServer.on("connection", (socket, request) => {
         const roomId = parsedData.roomId;
 
         // Get the user from the users map
-        const user = users.get(socket);
+        const user = JSON.parse(
+          (await redis.hget("users", socket.toString())) || "{}"
+        ) as { id: string; rooms: string[] };
 
         // If the user is not present, return
         if (!user) {
@@ -93,7 +103,10 @@ webSocketServer.on("connection", (socket, request) => {
         user.rooms.push(roomId);
 
         // Update the user in the users map
-        users.set(socket, user);
+        // users.set(socket, user);
+
+        // Update the user in redis
+        redis.hset("users", socket.toString(), JSON.stringify(user));
 
         // Subscribe the user to the room
         socket.send(
@@ -110,7 +123,11 @@ webSocketServer.on("connection", (socket, request) => {
         const roomId = parsedData.roomId;
 
         // Get the user from the users map
-        const user = users.get(socket);
+        // const user = users.get(socket);
+
+        const user = JSON.parse(
+          (await redis.hget("users", socket.toString())) || "{}"
+        ) as { id: string; rooms: string[] };
 
         // If the user is not present, return
         if (!user) {
@@ -121,7 +138,10 @@ webSocketServer.on("connection", (socket, request) => {
         user.rooms = user.rooms.filter((room) => room !== roomId);
 
         // Update the user in the users map
-        users.set(socket, user);
+        // users.set(socket, user);
+
+        // Update the user in redis
+        redis.hset("users", socket.toString(), JSON.stringify(user));
 
         // Unsubscribe the user from the room
         socket.send(
@@ -138,7 +158,12 @@ webSocketServer.on("connection", (socket, request) => {
         const { roomId, message } = parsedData;
 
         // Get the user from the users map
-        const user = users.get(socket);
+        // const user = users.get(socket);
+
+        // Get the user from redis
+        const user = JSON.parse(
+          (await redis.hget("users", socket.toString())) || "{}"
+        ) as { id: string; rooms: string[] };
 
         // If the user is not present, return
         if (!user) {
@@ -194,17 +219,44 @@ consumeQueue(async (msg) => {
     // Get the room id, user id, user name, and message from the message data
     const { roomId, userId, userName, message } = messageData;
     // Send the message to the users in the room
-    users.forEach((user, ws) => {
+    // users.forEach((user, ws) => {
+    //   if (user.rooms.includes(roomId)) {
+    //     ws.send(
+    //       JSON.stringify({
+    //         type: "chat",
+    //         roomId,
+    //         userId,
+    //         userName,
+    //         message,
+    //       })
+    //     );
+    //   }
+    // });
+
+    // Get the users from redis
+    const users = await redis.hgetall("users");
+
+    // Send the message to the users in the room
+    Object.entries(users).forEach(([key, value]) => {
+      const user = JSON.parse(value) as { id: string; rooms: string[] };
       if (user.rooms.includes(roomId)) {
-        ws.send(
-          JSON.stringify({
-            type: "chat",
-            roomId,
-            userId,
-            userName,
-            message,
-          })
-        );
+        // Send the message to the user
+        webSocketServer.clients.forEach((client) => {
+          if (
+            client.readyState === WebSocket.OPEN &&
+            client.toString() === key
+          ) {
+            client.send(
+              JSON.stringify({
+                type: "chat",
+                roomId,
+                userId,
+                userName,
+                message,
+              })
+            );
+          }
+        });
       }
     });
 
@@ -221,14 +273,38 @@ consumeQueue(async (msg) => {
     if (!saveChatInDb) {
       console.log("Failed to save chat in db");
       // Send the error message only to the user who sent the message
-      users.forEach((user, ws) => {
+      // users.forEach((user, ws) => {
+      //   if (user.id === userId) {
+      //     ws.send(
+      //       JSON.stringify({
+      //         type: "Error",
+      //         message: "Failed to save shape in db.",
+      //       })
+      //     );
+      //   }
+      // });
+
+      // Get the users from redis
+      const users = await redis.hgetall("users");
+
+      // Send the message to the users in the room
+      Object.entries(users).forEach(([key, value]) => {
+        const user = JSON.parse(value) as { id: string; rooms: string[] };
         if (user.id === userId) {
-          ws.send(
-            JSON.stringify({
-              type: "Error",
-              message: "Failed to save shape in db.",
-            })
-          );
+          // Send the message to the user
+          webSocketServer.clients.forEach((client) => {
+            if (
+              client.readyState === WebSocket.OPEN &&
+              client.toString() === key
+            ) {
+              client.send(
+                JSON.stringify({
+                  type: "Error",
+                  message: "Failed to save shape in db.",
+                })
+              );
+            }
+          });
         }
       });
     }
